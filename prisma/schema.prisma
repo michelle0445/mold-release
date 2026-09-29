@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Employee {
+  id          Int       @id @default(autoincrement())
+  nomina      String    @unique
+  name        String
+  department  String
+  email       String?
+  isApprover  Boolean   @default(false)
+  isSecurity  Boolean   @default(false)
+  requests    Request[]
+  approvals   Request[] @relation("Approvals")
+  validations Request[] @relation("Validations")
+}
+
+model Request {
+  id                 Int       @id @default(autoincrement())
+  ticketNumber       String    @unique
+  type               String    @default("MOLD")
+  movementType       String    @default("SALIDA")
+  status             String    @default("PENDING")
+  token              String    @unique
+  approverEmail      String
+  securityEmail      String?
+  reason             String
+  moldNumber         String?
+  shift              String?
+  productionLine     String?
+  category           String?
+  provider           String?
+  isMaquila          Boolean   @default(false)
+  expectedReturnDate String?
+  plates             String?
+  createdAt          DateTime  @default(now())
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  validatedAt        DateTime?
+  employeeId         Int
+  approvedById       Int?
+  validatedById      Int?
+  comment            String?
+  employee           Employee  @relation(fields: [employeeId], references: [id])
+  approver           Employee? @relation("Approvals", fields: [approvedById], references: [id])
+  validator          Employee? @relation("Validations", fields: [validatedById], references: [id])
+}
+
+model ApprovalRoute {
+  id            Int      @id @default(autoincrement())
+  category      String   @unique
+  approverEmail String
+  approverName  String?
+  createdAt     DateTime @default(now())
+}
+
+model Settings {
+  id   Int    @id @default(autoincrement())
+  key  String @unique
+  value String
+}
